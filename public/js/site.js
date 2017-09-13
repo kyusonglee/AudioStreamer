@@ -3,14 +3,17 @@
  */
 
 $(function () {
+	var isChrome = window.chrome;
     var client,
         recorder,
         context,
         bStream,
-        contextSampleRate = (new AudioContext()).sampleRate;
-        resampleRate = contextSampleRate,
         worker = new Worker('js/worker/resampler-worker.js');
-
+		if(isChrome)
+        	contextSampleRate = (new AudioContext()).sampleRate;
+		else
+        	contextSampleRate = (new window.webkitAudioContext()).sampleRate;
+        resampleRate = contextSampleRate;
     worker.postMessage({cmd:"init",from:contextSampleRate,to:resampleRate});
 
     worker.addEventListener('message', function (e) {
@@ -37,7 +40,11 @@ $(function () {
 
 
         navigator.getUserMedia(session, function (stream) {
-            context = new AudioContext();
+			if (isChrome)
+            	context = new AudioContext()  ;
+			else
+            	context = new window.webkitAudioContext()  ;
+				
             var audioInput = context.createMediaStreamSource(stream);
             var bufferSize = 0; // let implementation decide
 
