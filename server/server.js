@@ -45,7 +45,8 @@ server.on('connection', function(client) {
     client.on('stream', function(stream, meta) {
 
         console.log("Stream Start@" + meta.sampleRate +"Hz");
-        var fileName = "recordings/"+ ua.os.name +"-"+ ua.os.version +"_"+ new Date().getTime();
+        //var fileName = "recordings/"+ new Date().getTime();
+        var fileName = "public/wav/"+ meta.filename;
         
         switch(CONFIG.AudioEncoding){
             case "WAV":

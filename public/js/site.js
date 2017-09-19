@@ -3,6 +3,7 @@
  */
 
 $(function () {
+	var today ="temptemp.wav";
 	var isChrome = window.chrome;
     var client,
         recorder,
@@ -20,12 +21,14 @@ $(function () {
         if (bStream && bStream.writable)
             bStream.write(convertFloat32ToInt16(e.data.buffer));
     }, false);
-
     $("#start-rec-btn").click(function () {
         close();
         client = new BinaryClient('wss://'+location.host);
-        client.on('open', function () {
-            bStream = client.createStream({sampleRate: resampleRate});
+		today = new Date().getTime();
+		console.log(today);
+        
+		client.on('open', function () {
+            bStream = client.createStream({sampleRate: resampleRate, filename:today.toString()});
         });
 
         if (context) {
@@ -47,25 +50,18 @@ $(function () {
 				
             var audioInput = context.createMediaStreamSource(stream);
             var bufferSize = 0; // let implementation decide
-
             recorder = context.createScriptProcessor(bufferSize, 1, 1);
-
             recorder.onaudioprocess = onAudio;
-
             audioInput.connect(recorder);
-
             recorder.connect(context.destination);
 
         }, function (e) {
-
         });
     });
 
     function onAudio(e) {
         var left = e.inputBuffer.getChannelData(0);
-
         worker.postMessage({cmd: "resample", buffer: left});
-
         drawBuffer(left);
     }
 
@@ -105,9 +101,16 @@ $(function () {
     $("#stop-rec-btn").click(function () {
         close();
     });
+   
+    $("#play-user-btn").click(function () {
+		var audio = new Audio("wav/"+today.toString()+".wav");
+		audio.play();
+    });
 
     function close(){
         console.log('close');
+		//var audio = new Audio(today.toString()+".wav");
+		//audio.play();
         if(recorder)
             recorder.disconnect();
         if(client)
